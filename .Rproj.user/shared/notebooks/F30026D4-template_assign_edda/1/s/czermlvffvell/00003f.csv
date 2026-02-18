@@ -1,0 +1,2 @@
+"0","legend(""topright"", legend = levels(data$diet),"
+"0","       col = 1:length(levels(data$diet)))"

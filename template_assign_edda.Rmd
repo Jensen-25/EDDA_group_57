@@ -1,0 +1,217 @@
+```{r, sources}
+source("exc2A.R")
+source("exc2B.R")
+source("exc2C.R")
+source("exc2B.R")
+```
+
+## Exercise 2)
+The second exercise is an analysis of how three different types of diet influence the weight loss among a population with N=78. Each person followed a specific diet during 6 weeks and the weight before and after this time period are measured. The considered dataset is `diet.txt`, which contains 7 variables for each member of the population. `preweight` here describes the initial weight and `weight6weeks` the after taking the diet for 6 weeks. An additional variable `weight.loss` is added to the data to perform paired sample testing during the exercise. The resulting dataset is as follows:
+```{r, dataset}
+head(data)
+```
+
+## Exercise 2a)
+This section contains the *informative graphical summary of the effect of diet on weight loss*. Since the data is measured for the same individuals before and after six weeks on the diet, the data are paired. The following assumptions have to be met before performing a paired t-test: independency of pairs, normality of weight loss, and the absence of extreme outliers. The considered response variable is `data$weight_loss` for this sub-exercise.
+
+**a)** The first assumption is met by the definition of the dataset, since the measurements are all indepent of each other.
+
+**b)** The second assumption can be checked by a QQ-plot. The red line represents the reference line under normality. Since the majority of the data points lie close to this line, there is strong evidence that normality can be assumed. Since this is the case in the figure, it is reasonable that the data is normally distributed.
+
+**c)** A boxplot is created to visually check whether the data contains outliers or not. The boxplot shows the median, interquartile range, and potential extreme values. To asses the amount of outliers numerically, the command `boxplot.stats(weight_loss)$out` is used, which gave `numeric(0)` as output, meaning that the data does not contain any outliers. 
+
+```{r, normality assumptions}
+# Q-Q plot for weight loss
+par(mfrow=c(1,2));
+qqnorm(weight_loss, main = "Normal Q-Q Plot of Weight Loss"); 
+qqline(weight_loss, col = "red"); 
+boxplot(weight_loss, main = "Boxplot of Weight Loss", ylab = "Weight lost (kg)", col = "lightblue");
+```
+
+To test claim that *the diet affects the weight loss*, a paired t-test was performed with `data$weight_loss` as response variable. The hypotheses are:
+
+- **H0:**The mean weight loss is equal to zero. $(\mu_x  = 0)$
+- **H1:** The mean weight loss is not equal to zero. $(\mu_x \neq 0)$
+The paired t-test resulted in a p-value of 1.17 × 10⁻²¹, which is far below the significance level of $\alpha = 0.05$. Consequently, the null hypothesis that there is no difference between `preweight` and `weight6weeks` is rejected, such that *HA:* The mean weight loss is not equal to zero, is accepted $\mu_x  \neq 0$. In other words, there is an observed difference between the variables `preweight` and `weight6weeks` and the mean difference is 3.84, implying that an individual loses 3.84 kg weight on average by taking a diet according to the data.
+
+```{r, t-test result}
+result <- t.test(preweight, weight6weeks, paired = TRUE, alternative = "two.sided")
+result
+```
+
+## exercise 2b
+This section investigates whether weight loss differs between the three diet groups. The response variable is the `weight_loss`, computed as the difference between `preweight` and `weight6weeks`. Since the factor diet contains three independent groups, a one-way ANOVA is used to test whether the mean weight loss is equal across diets. The hypotheses are:
+
+- **H0:** The mean weight loss is equal across all diet groups. $(\mu_{1} = \mu_{2} = \mu_{3})$
+- **H1:** At least one diet group has a different mean weight loss.
+A boxplot is created to compare the distribution of weight loss across the three diet groups. The differences of the mean and the spread among the groups give a visual indication of whether the diets may lead to different outcomes.
+
+```{r, boxplot among diet groups}
+boxplot(weight_loss ~ diet, data = data,
+        col = c("lightblue","lightgreen","lightpink"),
+        xlab = "Diet Group",
+        ylab = "Weight Loss",
+        main = "Weight Loss by Diet Group")
+```
+
+A one-way ANOVA is performed to test whether the mean weight loss differs between diet group. The results of the analysis are summarized in the table below, displaying that the null hypothesis is rejected since `p = 0.003 < 0.05`. This means that ‘**H1:** At least one diet group has a different mean weight loss.’ is true.
+
+```{r, ANOVA results}
+model <- aov(weight_loss ~ diet, data = data)
+summary(model)
+```
+To determine whether every separate diet leads to weight loss, three one-sample t-test were performed on each diet group, with the following hypotheses:
+
+- **H0:** Mean weight loss = 0.
+- **H1:** Mean weight loss > 0. 
+
+Again, `weight_loss` is the computed response variable and is used as before. To perform the one sample t-tests, see Section 2a to see which conditions have to be met to perform a proper t-test. The partitions of group 2 and group 3 seem to be suitable for a one-sample t-test, as the majority of the datapoints lie around the linear line and there are no extreme outliers. Although the first dataset shows two potential outliers in both the Q-Q plot and the boxplot, the overall distribution does differ much from normality, suggestingn that a t-test can be used in this.
+
+```{r, qqplots}
+par(mfrow = c(1,2))
+
+qqnorm(data$weight_loss[data$diet == 1], main = "Diet 1")
+qqline(data$weight_loss[data$diet == 1])
+
+qqnorm(data$weight_loss[data$diet == 2], main = "Diet 2")
+qqline(data$weight_loss[data$diet == 2])
+
+qqnorm(data$weight_loss[data$diet == 3], main = "Diet 3")
+qqline(data$weight_loss[data$diet == 3])
+```
+According to the performed t-test, every outcome implies that **H0** is rejected since p < 0.05, such that ‘**H1:** Mean weight loss > 0.’ is accepted for every diet group. $(\mu_1, \mu_2, \mu_3) \approx (2.516,3.026,5.148)$, suggesting that diet group 3 has the highest observed weight loss with a mean value of $\mu_3 \approx 5.148$.
+
+```{r, one-sample t-test for every group}
+t.test(data$weight_loss[data$diet == 1], mu = 0, alternative = "greater"); 
+t.test(data$weight_loss[data$diet == 2], mu = 0, alternative = "greater"); 
+t.test(data$weight_loss[data$diet == 3], mu = 0, alternative = "greater");
+```
+
+## exercise 2C)
+Question 2C investigates whether weight loss depends on diet, gender, and their interaction.  The response variable is `weight_loss`, computed as the difference between `preweight` and `weight6weeks`.  Since we have **two categorical factors** (diet with three groups, and gender with two groups), a **two-way ANOVA** is used.
+
+### Hypotheses
+
+We test three effects: **diet**, **gender**, and their **interaction**.
+
+#### Main effect of Diet
+- **H0:** The mean weight loss is equal across all diet groups. $(\mu_{1} = \mu_{2} = \mu_{3})$
+- **H1:** At least one diet group has a different mean weight loss.
+
+#### Main effect of Gender
+- **H0:** The mean weight loss is equal for both genders. $(\mu_M = \mu_F)$
+- **H1:** The mean weight loss differs between genders. $(\mu_M \neq \mu_F)$
+
+#### Interaction effect (Diet × Gender)
+- **H0:** There is no interaction between diet and gender (the effect of diet is the same for both genders).
+- **H1:** There is an interaction between diet and gender (the effect of diet depends on gender).
+```{r, mean analysis}
+
+aggregate(weight_loss ~ diet, data = data, mean)
+aggregate(weight_loss ~ gender, data = data, mean)
+
+```
+The below figures are used to give a visual indication of the effects and the interactions. The boxplot for weight loss by gender indicates that although the spread among men is higher than for women, the average mean weight loss is almost equal $\mu_m = 3.893 \land \mu_f = 4.015)$. For the diet groups, we clearly observe visually that the third diet group (purple) causes a higher weight loss $(\mu_3 = 5.148)$ than the first and the second group $(\mu_1 = 3.300 \land \mu_2 = 3.026)$. 
+```{r, visual indication boxplots Two-way ANOVA}
+par(mfrow = c(2,2))
+boxplot(weight_loss ~ gender, data = data,
+        col = c("lightblue","lightpink"),
+        xlab = "Gender",
+        ylab = "Weight Loss",
+        main = "Weight Loss by Gender")
+
+boxplot(weight_loss ~ diet, data = data,
+        col = c("orange","green","purple"),
+        xlab = "Diet Group",
+        ylab = "Weight Loss",
+        main = "Weight Loss by Diet Group")
+```
+
+```{r}
+aggregate(weight_loss ~ diet + gender, data = data, mean)
+
+```
+The interaction plots below show that the effect of diet on weight loss differs between genders. In the table above, 0 is translated to m (men) and 1 to f (female). To support this interpretation, we consider the cell means (interaction means) for each combination of diet group and gender. For women, the mean weight loss equals$(\mu_{1,m},\mu_{2,m}, \mu_{3,m}) = (3.05,2.61,5.88).$ This indicates that diet 3 leads to a clearly higher mean weight loss compared with diets 1 and 2.
+
+For womenn, the mean weight loss equals $(\mu_{1,f},\mu_{2,f},\mu_{3,f})= (3.65,4.11,4.23)$. Here, the mean weight loss is more equally divided across the three diets. This suggests that the diet effect is more pronounced for men, especially for diet 3.
+
+```{r, interaction plots}
+interaction.plot(diet, gender, weight_loss,
+                 col = c("lightblue","lightpink"),
+                 xlab = "Diet Group",
+                 ylab = "Weight Loss",
+                 main = "Weight Loss by Gender")
+interaction.plot(gender, diet, weight_loss,
+                 col = c("orange","green","purple"),
+                 xlab = "Gender",
+                 ylab = "Weight Loss",
+                 main = "Weight Loss by Diet Group")
+```
+
+Two-way ANOVA was perfofrmed to determine the effects of diet, gender, and their interaction on weight loss. There was a significant main effect of diet, \(F( = 5.63\), \(p = 0.005\), indicating that mean weight loss differs between the three diet groups. The main effect of gender was not significant, \(F = 0.03\), \(p = 0.860\), suggesting that overall weight loss does not differ between men and women. Importantly, a significant interaction between diet and gender was found,\(F = 3.15\), \(p = 0.049\). This is evidence that the effect of diet on weight loss depends on gender. 
+
+```{r, two-way ANOVA summary}
+gender_factor = as.factor(gender)
+diet_factor = as.factor(diet)
+
+weight_loss_aov <- lm(weight_loss~diet_factor*gender_factor);
+anova(weight_loss_aov)
+```
+
+## exercise 2D
+For exercise 2D, we included the variables gender, height and age to investigate whether these covariates influence weight loss. The models used are linear models (`lm`), which fits linear regression models by least squares. We use an ANCOVA (analysis of covariance) model because both categorical (`diet group` & `gender` and continuous variables (`height` & `age`) are included in this case.
+
+The four scatterplots of `weight_loss` against `age` and `height`, are categorized by either gender or diet group. None of the scatterplots shows a clear linear relationship, suggesting that both `height` and `age` do not influence weight loss, neither show crossover effects with `diet` and `age`. These observations will be formally tested using regression analysis. Only the interaction `diet*gender` will be analyzed in this part, since the interaction is significant according to exc 2C.
+
+```{r}
+data$diet   <- as.factor(data$diet)
+data$gender <- as.factor(data$gender)
+data$height <- as.numeric(as.character(data$height))
+data$age    <- as.numeric(as.character(data$age))
+par(mfrow = c(2,2))
+
+plot(data$age, data$weight_loss,
+     col = as.numeric(data$diet), pch = 19,
+     xlab = "Age", ylab = "Weight loss",
+     main = "Age vs weight loss (by diet)")
+legend("topright", legend = levels(data$diet),
+       col = 1:length(levels(data$diet)))
+
+plot(data$height, data$weight_loss,
+     col = as.numeric(data$diet), pch = 19,
+     xlab = "Height", ylab = "Weight loss",
+     main = "Height vs weight loss (by diet)")
+legend("topright", legend = levels(data$diet),
+       col = 1:length(levels(data$diet)))
+
+plot(data$age, data$weight_loss,
+     col = as.numeric(data$gender), pch = 19,
+     xlab = "Age", ylab = "Weight loss",
+     main = "Age vs weight loss (by gender)")
+legend("topright", legend = levels(data$gender),
+       col = 1:length(levels(data$gender)))
+
+plot(data$height, data$weight_loss, , pch = 19,
+     col = as.numeric(data$gender),
+     xlab = "Height", ylab = "Weight loss",
+     main = "Height vs weight loss (by gender)")
+legend("topright", legend = levels(data$gender),
+       col = 1:length(levels(data$gender)))
+
+```
+
+An ANOVA test is performed on the linear model including diet, gender, height and age. The ANOVA table shows that diet has a significant effect on `weight_loss` (p < 0.05), but `gender`, `height` and `age` are not statistically significant (p > 0.05). This means that there is no evidence that these variables independently influence `weight_loss` in the linear model.
+
+```{r}
+model1 <- lm(weight_loss ~ diet + gender + height + age, data = data)
+anova(model1)
+```
+We included the interaction between diet and gender as well to investigate whether the effect of diet differs between genders. The interaction term diet ~ gender is statistically significant (p = 0.048 < 0.05), which means that the interaction between gender and diet has effect on `weight_loss`. This means that the model fit is improved compared to the first model. The remaining variables (excluding diet), do not show a significant effect on the model fit.
+```{r}
+model_int <- lm(weight_loss ~ diet * gender + height + age, data = data)
+anova(model_int)
+```
+To investigate which model should be chosen, an additional ANOVA test is performed on the two models. Since p = 0.048 < 0.05, **H0** is rejected, so we can conclude that the interaction has effect on the model. This means that we should rather use `model_int` for, since including the interaction diet * gender improves the model according to the ANOVA test.
+```{r, model comparison}
+anova(model1, model_int)
+```
