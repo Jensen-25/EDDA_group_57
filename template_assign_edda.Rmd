@@ -218,7 +218,6 @@ anova(model1, model_int)
 
 ## exercise 2E
 
-## Exercise 2E
 For the selected model from Exercise 2D,
 \[
 \text{weight\_loss} \sim \text{diet} * \text{gender} + \text{height} + \text{age},
