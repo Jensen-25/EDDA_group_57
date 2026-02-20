@@ -1,8 +1,130 @@
+## Exercise 1a) Seeded clouds
+
+We compare rainfall from **two independent samples** (26 seeded vs 26 unseeded clouds). The data are **not paired**, since different clouds were assigned to treatment and control groups.
+
+The research question is whether **seeding increases rainfall**, so we mainly consider the one-sided alternative \(H_1:\mu_{\text{seeded}}>\mu_{\text{unseeded}}\), but we also report two-sided p-values.
+
+```{r, ex1a_all, fig.width=7, fig.height=4, message=FALSE, warning=FALSE}
+options(digits = 3)
+
+# Load data
+clouds <- read.table("clouds.txt", header = TRUE)
+seeded <- clouds$seeded
+unseeded <- clouds$unseeded
+
+# Visual check: skewness/outliers
+par(mfrow=c(1,2))
+boxplot(seeded, unseeded, names=c("Seeded","Unseeded"),
+        main="Rainfall by group", ylab="Rainfall (feet per acre)")
+qqnorm(seeded, main="QQ-plot seeded"); qqline(seeded, col="red")
+par(mfrow=c(1,1))
+
+# Tests
+tt_two <- t.test(seeded, unseeded, alternative="two.sided")   # Welch
+tt_gre <- t.test(seeded, unseeded, alternative="greater")
+
+mw_two <- wilcox.test(seeded, unseeded, alternative="two.sided", exact=FALSE)
+mw_gre <- wilcox.test(seeded, unseeded, alternative="greater", exact=FALSE)
+
+ks_two <- ks.test(seeded, unseeded, alternative="two.sided")
+
+# Short p-value table (only relevant lines)
+pvals <- data.frame(
+  Test = c("Welch t-test", "Mann–Whitney", "KS test"),
+  `p (two-sided)` = c(tt_two$p.value, mw_two$p.value, ks_two$p.value),
+  `p (seeded > unseeded)` = c(tt_gre$p.value, mw_gre$p.value, NA)
+)
+pvals
+
+# Short conclusion text (auto-generated so it matches the numbers)
+cat("\nConclusion (alpha = 0.05):\n")
+cat(sprintf("- Welch t-test: two-sided p = %.4f; one-sided (seeded > unseeded) p = %.4f.\n",
+            tt_two$p.value, tt_gre$p.value))
+cat(sprintf("- Mann–Whitney: two-sided p = %.4f; one-sided p = %.4f.\n",
+            mw_two$p.value, mw_gre$p.value))
+cat(sprintf("- KS test (two-sided): p = %.4f.\n", ks_two$p.value))
+
+cat("\nInterpretation:\n")
+cat("Rainfall is highly skewed with extreme values, so the t-test assumptions are questionable.\n")
+cat("Nonparametric tests (Mann–Whitney and KS) indicate a significant difference between groups.\n")
+cat("Because assignment to seeded/unseeded clouds was randomized, a permutation test is applicable and valid.\n")
+```
+
+Applicability.
+
+Welch t-test targets means and is sensitive to skewness/outliers.
+
+Mann–Whitney compares location (often interpreted as median shift under assumptions).
+
+KS compares entire distributions.
+A permutation test is applicable because treatment assignment was randomized.
+
+## Exercise 1b) Transformations of rainfall
+
+To reduce skewness and stabilize variance, we repeat the analysis using the square root and the fourth root (sqrt of sqrt) transformations of rainfall.
+
+```{r, ex1b_transformations}
+options(digits = 3)
+
+clouds <- read.table("clouds.txt", header = TRUE)
+seeded <- clouds$seeded
+unseeded <- clouds$unseeded
+
+seeded_sqrt  <- sqrt(seeded)
+unseeded_sqrt <- sqrt(unseeded)
+
+seeded_4rt  <- sqrt(seeded_sqrt)
+unseeded_4rt <- sqrt(unseeded_sqrt)
+
+par(mfrow=c(2,2))
+
+qqnorm(seeded_sqrt, main="QQ-plot sqrt(seeded)")
+qqline(seeded_sqrt, col="red")
+
+qqnorm(seeded_4rt, main="QQ-plot fourth-root(seeded)")
+qqline(seeded_4rt, col="red")
+
+boxplot(seeded_sqrt, unseeded_sqrt,
+        names=c("Seeded","Unseeded"),
+        main="Sqrt rainfall")
+
+boxplot(seeded_4rt, unseeded_4rt,
+        names=c("Seeded","Unseeded"),
+        main="Fourth-root rainfall")
+
+par(mfrow=c(1,1))
+
+tt_sqrt  <- t.test(seeded_sqrt, unseeded_sqrt, alternative="greater")
+mw_sqrt  <- wilcox.test(seeded_sqrt, unseeded_sqrt, alternative="greater", exact=FALSE)
+ks_sqrt  <- ks.test(seeded_sqrt, unseeded_sqrt)
+
+tt_4rt  <- t.test(seeded_4rt, unseeded_4rt, alternative="greater")
+mw_4rt  <- wilcox.test(seeded_4rt, unseeded_4rt, alternative="greater", exact=FALSE)
+ks_4rt  <- ks.test(seeded_4rt, unseeded_4rt)
+
+results_1b <- data.frame(
+  Transformation = c("Sqrt", "Fourth-root"),
+  `Welch p` = c(tt_sqrt$p.value, tt_4rt$p.value),
+  `Mann-Whitney p` = c(mw_sqrt$p.value, mw_4rt$p.value),
+  `KS (two-sided) p` = c(ks_sqrt$p.value, ks_4rt$p.value)
+)
+
+results_1b
+```
+
+The square-root transformation reduces skewness compared to the original data, and the fourth-root transformation improves symmetry even further, as seen in the QQ-plots.
+
+After transformation, the Welch t-test becomes more reliable because the normality assumption is better satisfied. The significance levels remain similar, and the evidence that seeded clouds produce more rainfall persists.
+
+The nonparametric tests (Mann–Whitney and KS) are largely unaffected by transformation, since they do not rely on normality assumptions.
+
+Overall, the conclusion from Exercise 1a remains unchanged: there is evidence that seeding increases rainfall.
+
 ```{r, sources}
 source("exc2A.R")
 source("exc2B.R")
 source("exc2C.R")
-source("exc2B.R")
+source("exc2D.R")
 ```
 
 ## Exercise 2)
@@ -222,21 +344,26 @@ For the selected model from Exercise 2D,
 \[
 \text{weight\_loss} \sim \text{diet} * \text{gender} + \text{height} + \text{age},
 \]
-predictions were computed for an average person (age = 39.2 years, height = 171 cm).
-
-The highest predicted weight loss is observed for **Diet 3 and men (gender = 0)**, with an expected loss of **5.76 kg** (95% CI: [4.47, 7.05]). Therefore, according to the fitted model, men following Diet 3 are predicted to lose the most weight.
+predictions were computed for an average person (age and height set to their sample means). Here, gender = 0 denotes men and gender = 1 denotes women.
 
 ```{r, exercise2e_predictions}
-# Fit the chosen model (same as 2D)
+# Make sure variable types are correct (robust for knitting)
+data$diet   <- as.factor(data$diet)
+data$gender <- as.factor(data$gender)
+data$age    <- as.numeric(data$age)
+data$height <- as.numeric(data$height)
+
+# Remove missing values
 data2 <- na.omit(data)
 
+# Fit final model (chosen in 2D)
 model_int <- lm(weight_loss ~ diet * gender + height + age, data = data2)
 
-# Average person
+# Average person (sample means)
 mean_age <- mean(data2$age)
 mean_height <- mean(data2$height)
 
-# Predictions for all diet x gender groups
+# Predictions for all diet × gender groups
 newdata <- expand.grid(
   diet = levels(data2$diet),
   gender = levels(data2$gender),
@@ -244,8 +371,10 @@ newdata <- expand.grid(
   height = mean_height
 )
 
-pred <- predict(model_int, newdata = newdata, interval = "confidence")
+pred <- predict(model_int, newdata = newdata, interval = "confidence", level = 0.95)
 results <- cbind(newdata, pred)
 results <- results[order(-results$fit), ]
+
 results
-```
+
+
