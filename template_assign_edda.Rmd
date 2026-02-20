@@ -215,3 +215,38 @@ To investigate which model should be chosen, an additional ANOVA test is perform
 ```{r, model comparison}
 anova(model1, model_int)
 ```
+
+## exercise 2E
+
+## Exercise 2E
+For the selected model from Exercise 2D,
+\[
+\text{weight\_loss} \sim \text{diet} * \text{gender} + \text{height} + \text{age},
+\]
+predictions were computed for an average person (age = 39.2 years, height = 171 cm).
+
+The highest predicted weight loss is observed for **Diet 3 and men (gender = 0)**, with an expected loss of **5.76 kg** (95% CI: [4.47, 7.05]). Therefore, according to the fitted model, men following Diet 3 are predicted to lose the most weight.
+
+```{r, exercise2e_predictions}
+# Fit the chosen model (same as 2D)
+data2 <- na.omit(data)
+
+model_int <- lm(weight_loss ~ diet * gender + height + age, data = data2)
+
+# Average person
+mean_age <- mean(data2$age)
+mean_height <- mean(data2$height)
+
+# Predictions for all diet x gender groups
+newdata <- expand.grid(
+  diet = levels(data2$diet),
+  gender = levels(data2$gender),
+  age = mean_age,
+  height = mean_height
+)
+
+pred <- predict(model_int, newdata = newdata, interval = "confidence")
+results <- cbind(newdata, pred)
+results <- results[order(-results$fit), ]
+results
+```
