@@ -218,6 +218,42 @@ source("exc2C.R")
 source("exc2D.R")
 ```
 
+## Exercise 1e) Median and fraction tests (seeded clouds)
+
+We consider only the seeded sample (\(n = 26\)). Because rainfall is highly skewed, we use exact binomial tests.
+
+### (i) Test whether the median precipitation is less than 300
+
+We perform a sign test:
+
+\[
+H_0: \text{median} = 300
+\qquad \text{vs} \qquad
+H_1: \text{median} < 300.
+\]
+
+Out of 26 observations, 17 are below 300. The exact binomial test yields \(p = 0.084\).
+
+**Conclusion (\(\alpha = 0.05\)).** Since \(p = 0.084 > 0.05\), we do not reject \(H_0\).  
+There is insufficient evidence that the median precipitation of seeded clouds is less than 300.
+
+### (ii) Test whether the fraction with precipitation < 30 is at most 25%
+
+Let \(p = P(X < 30)\). We test:
+
+\[
+H_0: p \le 0.25
+\qquad \text{vs} \qquad
+H_1: p > 0.25.
+\]
+
+We observe 3 out of 26 clouds with precipitation below 30, so \(\hat p = 3/26 = 0.115\).
+The exact binomial test yields \(p = 0.974\), with a 95% confidence interval for \(p\) equal to \([0.024,\, 0.302]\).
+
+**Conclusion (\(\alpha = 0.05\)).** Since \(p = 0.974 > 0.05\), we do not reject \(H_0\).  
+The data are consistent with the fraction of seeded clouds with precipitation below 30 being at most 25%.
+
+
 ## Exercise 2)
 The second exercise is an analysis of how three different types of diet influence the weight loss among a population with N=78. Each person followed a specific diet during 6 weeks and the weight before and after this time period are measured. The considered dataset is `diet.txt`, which contains 7 variables for each member of the population. `preweight` here describes the initial weight and `weight6weeks` the after taking the diet for 6 weeks. An additional variable `weight.loss` is added to the data to perform paired sample testing during the exercise. The resulting dataset is as follows:
 ```{r, dataset}
