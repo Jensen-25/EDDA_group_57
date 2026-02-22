@@ -1,3 +1,0 @@
-"0","legend(""topright"", legend = levels(data$gender),"
-"0","       col = 1:length(levels(data$gender)))"
-"0",""

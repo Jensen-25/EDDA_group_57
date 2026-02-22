@@ -1,5 +1,0 @@
-"0",""
-"0","plot(data$height, data$weight_loss, , pch = 19,"
-"0","     col = as.numeric(data$gender),"
-"0","     xlab = ""Height"", ylab = ""Weight loss"","
-"0","     main = ""Height vs weight loss (by gender)"")"

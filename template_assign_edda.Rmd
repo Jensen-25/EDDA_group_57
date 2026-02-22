@@ -1,3 +1,16 @@
+---
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,      # verbergt alle code
+  warning = FALSE,   # verbergt warnings
+  message = FALSE    # verbergt package messages
+)
+```
 Assignment 1 Experimental Design and Data Analysis 
 Group 57 - Layla Nolte, Jensen Valkenhoff, Richard Pereira e Silva 
 
@@ -214,12 +227,6 @@ the bootstrap test and Kolmogorov-Smirnov test. Both tests returned very small p
 indicating that the original distribution is not exponential. That is also clear looking
 at the histogram above.
 
-```{r, sources}
-source("exc2A.R")
-source("exc2B.R")
-source("exc2C.R")
-source("exc2D.R")
-```
 
 ## Exercise 1e) Median and fraction tests (seeded clouds)
 
@@ -260,7 +267,18 @@ The data are consistent with the fraction of seeded clouds with precipitation be
 ## Exercise 2)
 The second exercise is an analysis of how three different types of diet influence the weight loss among a population with N=78. Each person followed a specific diet during 6 weeks and the weight before and after this time period are measured. The considered dataset is `diet.txt`, which contains 7 variables for each member of the population. `preweight` here describes the initial weight and `weight6weeks` the after taking the diet for 6 weeks. An additional variable `weight.loss` is added to the data to perform paired sample testing during the exercise. The resulting dataset is as follows:
 ```{r, dataset}
+# read data for exc 2
 head(data)
+data <- read.table('diet.txt')
+colnames(data) <- as.character(unlist(data[1, ]))
+data <- data[-c(1), ]
+
+# compute weight loss for every entry
+data$weight_loss <- as.numeric(data$preweight) - as.numeric(data$weight6weeks)
+
+weight_loss = data$weight_loss
+weight6weeks = as.numeric(data$weight6weeks)
+preweight = as.numeric(data$preweight)
 ```
 
 ## Exercise 2a)
@@ -388,6 +406,9 @@ The interaction plots below show that the effect of diet on weight loss differs 
 For womenn, the mean weight loss equals $(\mu_{1,f},\mu_{2,f},\mu_{3,f})= (3.65,4.11,4.23)$. Here, the mean weight loss is more equally divided across the three diets. This suggests that the diet effect is more pronounced for men, especially for diet 3.
 
 ```{r, interaction plots}
+diet <- data$diet
+gender <- data$gender 
+weight_loss <- data$weight_loss
 interaction.plot(diet, gender, weight_loss,
                  col = c("lightblue","lightpink"),
                  xlab = "Diet Group",
