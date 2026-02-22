@@ -1,3 +1,6 @@
+Assignment 1 Experimental Design and Data Analysis 
+Group 57 - Layla Nolte, Jensen Valkenhoff, Richard Pereira e Silva 
+
 ## Exercise 1a) Seeded clouds
 
 We compare rainfall from **two independent samples** (26 seeded vs 26 unseeded clouds). The data are **not paired**, since different clouds were assigned to treatment and control groups.
