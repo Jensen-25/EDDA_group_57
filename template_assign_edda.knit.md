@@ -1,25 +1,8 @@
 ---
 output:
-  pdf_document:
-    latex_engine: xelatex
+  pdf_document: default
   html_document: default
-  word_document: default
-fontsize: 9pt
-header-includes:
-  - \usepackage{etoolbox}
-  - \AtBeginEnvironment{verbatim}{\footnotesize}
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  warning = FALSE,
-  message = FALSE,
-  fig.width = 6,
-  fig.height = 4,
-  out.width = "80%"
-)
-```
-
 Assignment 1 Experimental Design and Data Analysis 
 Group 57 - Layla Nolte, Jensen Valkenhoff, Richard Pereira e Silva 
 
@@ -29,7 +12,8 @@ We compare rainfall from **two independent samples** (26 seeded vs 26 unseeded c
 
 The research question is whether **seeding increases rainfall**, so we mainly consider the one-sided alternative \(H_1:\mu_{\text{seeded}}>\mu_{\text{unseeded}}\), but we also report two-sided p-values.
 
-```{r, ex1a_all, fig.width=7, fig.height=4, message=FALSE, warning=FALSE}
+
+``` r
 options(digits = 3)
 
 # Load data
@@ -42,6 +26,11 @@ par(mfrow=c(1,2))
 boxplot(seeded, unseeded, names=c("Seeded","Unseeded"),
         main="Rainfall by group", ylab="Rainfall (feet per acre)")
 qqnorm(seeded, main="QQ-plot seeded"); qqline(seeded, col="red")
+```
+
+![](template_assign_edda_files/figure-latex/ex1a_all-1.pdf)<!-- --> 
+
+``` r
 par(mfrow=c(1,1))
 
 # Tests
@@ -60,19 +49,82 @@ pvals <- data.frame(
   `p (seeded > unseeded)` = c(tt_gre$p.value, mw_gre$p.value, NA)
 )
 pvals
+```
 
+```
+##           Test p..two.sided. p..seeded...unseeded.
+## 1 Welch t-test        0.0538               0.02688
+## 2 Mann–Whitney        0.0138               0.00692
+## 3      KS test        0.0177                    NA
+```
+
+``` r
 # Short conclusion text (auto-generated so it matches the numbers)
 cat("\nConclusion (alpha = 0.05):\n")
+```
+
+```
+## 
+## Conclusion (alpha = 0.05):
+```
+
+``` r
 cat(sprintf("- Welch t-test: two-sided p = %.4f; one-sided (seeded > unseeded) p = %.4f.\n",
             tt_two$p.value, tt_gre$p.value))
+```
+
+```
+## - Welch t-test: two-sided p = 0.0538; one-sided (seeded > unseeded) p = 0.0269.
+```
+
+``` r
 cat(sprintf("- Mann–Whitney: two-sided p = %.4f; one-sided p = %.4f.\n",
             mw_two$p.value, mw_gre$p.value))
-cat(sprintf("- KS test (two-sided): p = %.4f.\n", ks_two$p.value))
+```
 
+```
+## - Mann–Whitney: two-sided p = 0.0138; one-sided p = 0.0069.
+```
+
+``` r
+cat(sprintf("- KS test (two-sided): p = %.4f.\n", ks_two$p.value))
+```
+
+```
+## - KS test (two-sided): p = 0.0177.
+```
+
+``` r
 cat("\nInterpretation:\n")
+```
+
+```
+## 
+## Interpretation:
+```
+
+``` r
 cat("Rainfall is highly skewed with extreme values, so the t-test assumptions are questionable.\n")
+```
+
+```
+## Rainfall is highly skewed with extreme values, so the t-test assumptions are questionable.
+```
+
+``` r
 cat("Nonparametric tests (Mann–Whitney and KS) indicate a significant difference between groups.\n")
+```
+
+```
+## Nonparametric tests (Mann–Whitney and KS) indicate a significant difference between groups.
+```
+
+``` r
 cat("Because assignment to seeded/unseeded clouds was randomized, a permutation test is applicable and valid.\n")
+```
+
+```
+## Because assignment to seeded/unseeded clouds was randomized, a permutation test is applicable and valid.
 ```
 
 Applicability.
@@ -88,7 +140,8 @@ A permutation test is applicable because treatment assignment was randomized.
 
 To reduce skewness and stabilize variance, we repeat the analysis using the square root and the fourth root (sqrt of sqrt) transformations of rainfall.
 
-```{r, ex1b_transformations}
+
+``` r
 options(digits = 3)
 
 clouds <- read.table("clouds.txt", header = TRUE)
@@ -116,7 +169,11 @@ boxplot(seeded_sqrt, unseeded_sqrt,
 boxplot(seeded_4rt, unseeded_4rt,
         names=c("Seeded","Unseeded"),
         main="Fourth-root rainfall")
+```
 
+![](template_assign_edda_files/figure-latex/ex1b_transformations-1.pdf)<!-- --> 
+
+``` r
 par(mfrow=c(1,1))
 
 tt_sqrt  <- t.test(seeded_sqrt, unseeded_sqrt, alternative="greater")
@@ -137,6 +194,12 @@ results_1b <- data.frame(
 results_1b
 ```
 
+```
+##   Transformation Welch.p Mann.Whitney.p KS..two.sided..p
+## 1           Sqrt 0.00978        0.00692           0.0177
+## 2    Fourth-root 0.00620        0.00692           0.0177
+```
+
 The square-root transformation reduces skewness compared to the original data, and the fourth-root transformation improves symmetry even further, as seen in the QQ-plots.
 
 After transformation, the Welch t-test becomes more reliable because the normality assumption is better satisfied. The significance levels remain similar, and the evidence that seeded clouds produce more rainfall persists.
@@ -147,7 +210,8 @@ Overall, the conclusion from Exercise 1a remains unchanged: there is evidence th
 
 ## Exercise 1c) Testing Population Mean
 
-```{r}
+
+``` r
 options(digits=3)
 
 # Exercise 1
@@ -155,16 +219,57 @@ clouds = read.table("clouds.txt", header=TRUE)
 
 t1=sqrt(sqrt(clouds$seeded))
 mean(t1)
+```
+
+```
+## [1] 3.88
+```
+
+``` r
 mu3 <- t.test(t1, alternative = "greater", mu=3)
 mu4 <- t.test(t1, alternative = "greater", mu=4)
 mu3_5 <- t.test(t1, alternative = "greater", mu=3.5)
 
 # Sign test 
 sum(t1>3) 
+```
+
+```
+## [1] 20
+```
+
+``` r
 binom.test(20,26,alt="g",p=0.5)
+```
 
+```
+## 
+## 	Exact binomial test
+## 
+## data:  20 and 26
+## number of successes = 20, number of trials = 26, p-value = 0.005
+## alternative hypothesis: true probability of success is greater than 0.5
+## 95 percent confidence interval:
+##  0.595 1.000
+## sample estimates:
+## probability of success 
+##                  0.769
+```
+
+``` r
 wilcox.test(t1,mu=3,alt="g", exact = FALSE)
+```
 
+```
+## 
+## 	Wilcoxon signed rank test with continuity correction
+## 
+## data:  t1
+## V = 280, p-value = 0.004
+## alternative hypothesis: true location is greater than 3
+```
+
+``` r
 results_1c <- data.frame(
   Transformation = c("P-Value"),
   `Mu = 3` = c(mu3$p.value),
@@ -174,12 +279,18 @@ results_1c <- data.frame(
 
 results_1c
 ```
+
+```
+##   Transformation  Mu...3 Mu...4 M...3.5
+## 1        P-Value 0.00242  0.663  0.0973
+```
 The true mean of t1 is 3.88. The t-tests applied indicate that by rejecting that t1 mean is greater than 4 and failing to reject that it is greater than 3. The binomial test corroborates that. We can use the wilcoxon sign test rank to achieve the same result as shown above, Wilcoxon test doesn't rule out 
 m > 3 either.
 
 ## Exercise 1d) Using Median as Bootstrap Statistic
 
-```{r}
+
+``` r
 options(digits=3)
 
 clouds = read.table("clouds.txt", header=TRUE)
@@ -197,11 +308,23 @@ z_score = qnorm(0.975)
 # Lower CI Boundary
 lower <- mean_estimator - z_score*se
 lower
+```
 
+```
+## [1] 272
+```
+
+``` r
 # Upper CI Boundary
 upper <- mean_estimator + z_score*se
 upper
+```
 
+```
+## [1] 612
+```
+
+``` r
 # Bootstrap CI
 
 B=1000
@@ -214,19 +337,48 @@ for(i in 1:B) {
 Tstar25=quantile(Tstar,0.025)
 Tstar975=quantile(Tstar,0.975)
 c(2*mean(seeded)-Tstar975,2*mean(seeded)-Tstar25)
+```
 
+```
+## 97.5%  2.5% 
+##   580   767
+```
+
+``` r
 t <- mean_estimator
 pl=sum(Tstar<t)/B;pr=sum(Tstar>t)/B
 p=2*min(pl,pr); p
+```
+
+```
+## [1] 0.002
+```
+
+``` r
 ## p-value is 0.004 < 0.05 so H0 is rejected
 
 hist(Tstar,prob=T, main="Histogram of tstar")
 lines(rep(t,2),c(0,0.03), col="red",lwd=2)
 axis(1,t,expression(paste("t")))
+```
 
+![](template_assign_edda_files/figure-latex/unnamed-chunk-2-1.pdf)<!-- --> 
+
+``` r
 ks.test(jitter(Tstar), "pexp", t)
-# p-value small so H0 is rejected
+```
 
+```
+## 
+## 	Asymptotic one-sample Kolmogorov-Smirnov test
+## 
+## data:  jitter(Tstar)
+## D = 1, p-value <2e-16
+## alternative hypothesis: two-sided
+```
+
+``` r
+# p-value small so H0 is rejected
 ```
 
 Using the Central Limit Theorem we found a mean of 442 with a 95% CI of [272,612].
@@ -275,9 +427,23 @@ The data are consistent with the fraction of seeded clouds with precipitation be
 
 ## Exercise 2)
 The second exercise is an analysis of how three different types of diet influence the weight loss among a population with N=78. Each person followed a specific diet during 6 weeks and the weight before and after this time period are measured. The considered dataset is `diet.txt`, which contains 7 variables for each member of the population. `preweight` here describes the initial weight and `weight6weeks` the after taking the diet for 6 weeks. An additional variable `weight.loss` is added to the data to perform paired sample testing during the exercise. The resulting dataset is as follows:
-```{r, dataset}
-# read data for exc 2
 
+``` r
+# read data for exc 2
+head(data)
+```
+
+```
+##                                                                             
+## 1 function (..., list = character(), package = NULL, lib.loc = NULL,        
+## 2     verbose = getOption("verbose"), envir = .GlobalEnv, overwrite = TRUE) 
+## 3 {                                                                         
+## 4     fileExt <- function(x) {                                              
+## 5         db <- grepl("\\\\.[^.]+\\\\.(gz|bz2|xz)$", x)                     
+## 6         ans <- sub(".*\\\\.", "", x)
+```
+
+``` r
 data <- read.table('diet.txt')
 colnames(data) <- as.character(unlist(data[1, ]))
 data <- data[-c(1), ]
@@ -299,13 +465,16 @@ This section contains the *informative graphical summary of the effect of diet o
 
 **c)** A boxplot is created to visually check whether the data contains outliers or not. The boxplot shows the median, interquartile range, and potential extreme values. To asses the amount of outliers numerically, the command `boxplot.stats(weight_loss)$out` is used, which gave `numeric(0)` as output, meaning that the data does not contain any outliers. 
 
-```{r, normality assumptions}
+
+``` r
 # Q-Q plot for weight loss
-par(mfrow=c(1,3));
+par(mfrow=c(1,2));
 qqnorm(weight_loss, main = "Normal Q-Q Plot of Weight Loss"); 
 qqline(weight_loss, col = "red"); 
 boxplot(weight_loss, main = "Boxplot of Weight Loss", ylab = "Weight lost (kg)", col = "lightblue");
 ```
+
+![](template_assign_edda_files/figure-latex/normality assumptions-1.pdf)<!-- --> 
 
 To test claim that *the diet affects the weight loss*, a paired t-test was performed with `data$weight_loss` as response variable. The hypotheses are:
 
@@ -313,9 +482,24 @@ To test claim that *the diet affects the weight loss*, a paired t-test was perfo
 - **H1:** The mean weight loss is not equal to zero. $(\mu_x \neq 0)$
 The paired t-test resulted in a p-value of 1.17 × 10⁻²¹, which is far below the significance level of $\alpha = 0.05$. Consequently, the null hypothesis that there is no difference between `preweight` and `weight6weeks` is rejected, such that *HA:* The mean weight loss is not equal to zero, is accepted $\mu_x  \neq 0$. In other words, there is an observed difference between the variables `preweight` and `weight6weeks` and the mean difference is 3.84, implying that an individual loses 3.84 kg weight on average by taking a diet according to the data.
 
-```{r, t-test result}
+
+``` r
 result <- t.test(preweight, weight6weeks, paired = TRUE, alternative = "two.sided")
 result
+```
+
+```
+## 
+## 	Paired t-test
+## 
+## data:  preweight and weight6weeks
+## t = 13, df = 77, p-value <2e-16
+## alternative hypothesis: true mean difference is not equal to 0
+## 95 percent confidence interval:
+##  3.27 4.42
+## sample estimates:
+## mean difference 
+##            3.84
 ```
 
 ## exercise 2b
@@ -325,7 +509,8 @@ This section investigates whether weight loss differs between the three diet gro
 - **H1:** At least one diet group has a different mean weight loss.
 A boxplot is created to compare the distribution of weight loss across the three diet groups. The differences of the mean and the spread among the groups give a visual indication of whether the diets may lead to different outcomes.
 
-```{r, boxplot among diet groups}
+
+``` r
 boxplot(weight_loss ~ diet, data = data,
         col = c("lightblue","lightgreen","lightpink"),
         xlab = "Diet Group",
@@ -333,11 +518,22 @@ boxplot(weight_loss ~ diet, data = data,
         main = "Weight Loss by Diet Group")
 ```
 
+![](template_assign_edda_files/figure-latex/boxplot among diet groups-1.pdf)<!-- --> 
+
 A one-way ANOVA is performed to test whether the mean weight loss differs between diet group. The results of the analysis are summarized in the table below, displaying that the null hypothesis is rejected since `p = 0.003 < 0.05`. This means that ‘**H1:** At least one diet group has a different mean weight loss.’ is true.
 
-```{r, ANOVA results}
+
+``` r
 model <- aov(weight_loss ~ diet, data = data)
 summary(model)
+```
+
+```
+##             Df Sum Sq Mean Sq F value Pr(>F)   
+## diet         2     71    35.5     6.2 0.0032 **
+## Residuals   75    430     5.7                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 To determine whether every separate diet leads to weight loss, three one-sample t-test were performed on each diet group, with the following hypotheses:
 
@@ -346,36 +542,124 @@ To determine whether every separate diet leads to weight loss, three one-sample 
 
 Again, `weight_loss` is the computed response variable and is used as before. To perform the one sample t-tests, see Section 2a to see which conditions have to be met to perform a proper t-test. The partitions of group 2 and group 3 seem to be suitable for a one-sample t-test, as the majority of the datapoints lie around the linear line and there are no extreme outliers. Although the first dataset shows two potential outliers in both the Q-Q plot and the boxplot, the overall distribution does differ much from normality, suggestingn that a t-test can be used in this.
 
-```{r, qqplots}
-par(mfrow = c(1,3))
+
+``` r
+par(mfrow = c(1,2))
 
 qqnorm(data$weight_loss[data$diet == 1], main = "Diet 1")
 qqline(data$weight_loss[data$diet == 1])
 
 qqnorm(data$weight_loss[data$diet == 2], main = "Diet 2")
 qqline(data$weight_loss[data$diet == 2])
+```
 
+![](template_assign_edda_files/figure-latex/qqplots-1.pdf)<!-- --> 
+
+``` r
 qqnorm(data$weight_loss[data$diet == 3], main = "Diet 3")
 qqline(data$weight_loss[data$diet == 3])
 ```
+
+![](template_assign_edda_files/figure-latex/qqplots-2.pdf)<!-- --> 
 According to the performed t-test, every outcome implies that **H0** is rejected since p < 0.05, such that ‘**H1:** Mean weight loss > 0.’ is accepted for every diet group. $(\mu_1, \mu_2, \mu_3) \approx (2.516,3.026,5.148)$, suggesting that diet group 3 has the highest observed weight loss with a mean value of $\mu_3 \approx 5.148$.
 
-```{r, one-sample t-test for every group}
+
+``` r
 t.test(data$weight_loss[data$diet == 1], mu = 0, alternative = "greater"); 
+```
+
+```
+## 
+## 	One Sample t-test
+## 
+## data:  data$weight_loss[data$diet == 1]
+## t = 7, df = 23, p-value = 1e-07
+## alternative hypothesis: true mean is greater than 0
+## 95 percent confidence interval:
+##  2.52  Inf
+## sample estimates:
+## mean of x 
+##       3.3
+```
+
+``` r
 t.test(data$weight_loss[data$diet == 2], mu = 0, alternative = "greater"); 
+```
+
+```
+## 
+## 	One Sample t-test
+## 
+## data:  data$weight_loss[data$diet == 2]
+## t = 6, df = 26, p-value = 7e-07
+## alternative hypothesis: true mean is greater than 0
+## 95 percent confidence interval:
+##  2.2 Inf
+## sample estimates:
+## mean of x 
+##      3.03
+```
+
+``` r
 t.test(data$weight_loss[data$diet == 3], mu = 0, alternative = "greater");
+```
+
+```
+## 
+## 	One Sample t-test
+## 
+## data:  data$weight_loss[data$diet == 3]
+## t = 11, df = 26, p-value = 1e-11
+## alternative hypothesis: true mean is greater than 0
+## 95 percent confidence interval:
+##  4.36  Inf
+## sample estimates:
+## mean of x 
+##      5.15
 ```
 
 ## exercise 2C)
 Question 2C investigates whether weight loss depends on diet, gender, and their interaction.  The response variable is `weight_loss`, computed as the difference between `preweight` and `weight6weeks`.  Since we have **two categorical factors** (diet with three groups, and gender with two groups), a **two-way ANOVA** is used.
-```{r, mean analysis}
 
+### Hypotheses
+
+We test three effects: **diet**, **gender**, and their **interaction**.
+
+#### Main effect of Diet
+- **H0:** The mean weight loss is equal across all diet groups. $(\mu_{1} = \mu_{2} = \mu_{3})$
+- **H1:** At least one diet group has a different mean weight loss.
+
+#### Main effect of Gender
+- **H0:** The mean weight loss is equal for both genders. $(\mu_M = \mu_F)$
+- **H1:** The mean weight loss differs between genders. $(\mu_M \neq \mu_F)$
+
+#### Interaction effect (Diet × Gender)
+- **H0:** There is no interaction between diet and gender (the effect of diet is the same for both genders).
+- **H1:** There is an interaction between diet and gender (the effect of diet depends on gender).
+
+``` r
 aggregate(weight_loss ~ diet, data = data, mean)
-aggregate(weight_loss ~ gender, data = data, mean)
+```
 
 ```
+##   diet weight_loss
+## 1    1        3.30
+## 2    2        3.03
+## 3    3        5.15
+```
+
+``` r
+aggregate(weight_loss ~ gender, data = data, mean)
+```
+
+```
+##   gender weight_loss
+## 1      0        3.89
+## 2      1        4.02
+```
 The below figures are used to give a visual indication of the effects and the interactions. The boxplot for weight loss by gender indicates that although the spread among men is higher than for women, the average mean weight loss is almost equal $\mu_m = 3.893 \land \mu_f = 4.015)$. For the diet groups, we clearly observe visually that the third diet group (purple) causes a higher weight loss $(\mu_3 = 5.148)$ than the first and the second group $(\mu_1 = 3.300 \land \mu_2 = 3.026)$. 
-```{r, visual indication boxplots Two-way ANOVA}
+
+``` r
 par(mfrow = c(2,2))
 boxplot(weight_loss ~ gender, data = data,
         col = c("lightblue","lightpink"),
@@ -390,15 +674,28 @@ boxplot(weight_loss ~ diet, data = data,
         main = "Weight Loss by Diet Group")
 ```
 
-```{r}
-aggregate(weight_loss ~ diet + gender, data = data, mean)
+![](template_assign_edda_files/figure-latex/visual indication boxplots Two-way ANOVA-1.pdf)<!-- --> 
 
+
+``` r
+aggregate(weight_loss ~ diet + gender, data = data, mean)
+```
+
+```
+##   diet gender weight_loss
+## 1    1      0        3.05
+## 2    2      0        2.61
+## 3    3      0        5.88
+## 4    1      1        3.65
+## 5    2      1        4.11
+## 6    3      1        4.23
 ```
 The interaction plots below show that the effect of diet on weight loss differs between genders. In the table above, 0 is translated to m (men) and 1 to f (female). To support this interpretation, we consider the cell means (interaction means) for each combination of diet group and gender. For women, the mean weight loss equals$(\mu_{1,m},\mu_{2,m}, \mu_{3,m}) = (3.05,2.61,5.88).$ This indicates that diet 3 leads to a clearly higher mean weight loss compared with diets 1 and 2.
 
 For womenn, the mean weight loss equals $(\mu_{1,f},\mu_{2,f},\mu_{3,f})= (3.65,4.11,4.23)$. Here, the mean weight loss is more equally divided across the three diets. This suggests that the diet effect is more pronounced for men, especially for diet 3.
 
-```{r, interaction plots}
+
+``` r
 diet <- data$diet
 gender <- data$gender 
 weight_loss <- data$weight_loss
@@ -407,6 +704,11 @@ interaction.plot(diet, gender, weight_loss,
                  xlab = "Diet Group",
                  ylab = "Weight Loss",
                  main = "Weight Loss by Gender")
+```
+
+![](template_assign_edda_files/figure-latex/interaction plots-1.pdf)<!-- --> 
+
+``` r
 interaction.plot(gender, diet, weight_loss,
                  col = c("orange","green","purple"),
                  xlab = "Gender",
@@ -414,9 +716,12 @@ interaction.plot(gender, diet, weight_loss,
                  main = "Weight Loss by Diet Group")
 ```
 
+![](template_assign_edda_files/figure-latex/interaction plots-2.pdf)<!-- --> 
+
 Two-way ANOVA was perfofrmed to determine the effects of diet, gender, and their interaction on weight loss. There was a significant main effect of diet, \(F( = 5.63\), \(p = 0.005\), indicating that mean weight loss differs between the three diet groups. The main effect of gender was not significant, \(F = 0.03\), \(p = 0.860\), suggesting that overall weight loss does not differ between men and women. Importantly, a significant interaction between diet and gender was found,\(F = 3.15\), \(p = 0.049\). This is evidence that the effect of diet on weight loss depends on gender. 
 
-```{r, two-way ANOVA summary}
+
+``` r
 gender_factor = as.factor(gender)
 diet_factor = as.factor(diet)
 
@@ -424,40 +729,121 @@ weight_loss_aov <- lm(weight_loss~diet_factor*gender_factor);
 anova(weight_loss_aov)
 ```
 
+```
+## Analysis of Variance Table
+## 
+## Response: weight_loss
+##                           Df Sum Sq Mean Sq F value Pr(>F)   
+## diet_factor                2     61   30.26    5.63 0.0054 **
+## gender_factor              1      0    0.17    0.03 0.8599   
+## diet_factor:gender_factor  2     34   16.95    3.15 0.0488 * 
+## Residuals                 70    376    5.38                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
 ## exercise 2D
 For exercise 2D, we included the variables gender, height and age to investigate whether these covariates influence weight loss. The models used are linear models (`lm`), which fits linear regression models by least squares. We use an ANCOVA (analysis of covariance) model because both categorical (`diet group` & `gender` and continuous variables (`height` & `age`) are included in this case.
 
 The four scatterplots of `weight_loss` against `age` and `height`, are categorized by either gender or diet group. None of the scatterplots shows a clear linear relationship, suggesting that both `height` and `age` do not influence weight loss, neither show crossover effects with `diet` and `age`. These observations will be formally tested using regression analysis. Only the interaction `diet*gender` will be analyzed in this part, since the interaction is significant according to exc 2C.
 
-```{r, echo=FALSE}
-par(mfrow=c(2,2))
-with(transform(data,
-               diet=factor(diet),
-               gender=factor(gender),
-               height=as.numeric(as.character(height)),
-               age=as.numeric(as.character(age))),
-{
-  plot(age, weight_loss, col=as.numeric(diet), pch=19)
-  plot(height, weight_loss, col=as.numeric(diet), pch=19)
-  plot(age, weight_loss, col=as.numeric(gender), pch=19)
-  plot(height, weight_loss, col=as.numeric(gender), pch=19)
-})
+
+``` r
+data$diet   <- as.factor(data$diet)
+data$gender <- as.factor(data$gender)
+data$height <- as.numeric(as.character(data$height))
+data$age    <- as.numeric(as.character(data$age))
+par(mfrow = c(2,2))
+
+plot(data$age, data$weight_loss,
+     col = as.numeric(data$diet), pch = 19,
+     xlab = "Age", ylab = "Weight loss",
+     main = "Age vs weight loss (by diet)")
+legend("topright", legend = levels(data$diet),
+       col = 1:length(levels(data$diet)))
+
+plot(data$height, data$weight_loss,
+     col = as.numeric(data$diet), pch = 19,
+     xlab = "Height", ylab = "Weight loss",
+     main = "Height vs weight loss (by diet)")
+legend("topright", legend = levels(data$diet),
+       col = 1:length(levels(data$diet)))
+
+plot(data$age, data$weight_loss,
+     col = as.numeric(data$gender), pch = 19,
+     xlab = "Age", ylab = "Weight loss",
+     main = "Age vs weight loss (by gender)")
+legend("topright", legend = levels(data$gender),
+       col = 1:length(levels(data$gender)))
+
+plot(data$height, data$weight_loss, , pch = 19,
+     col = as.numeric(data$gender),
+     xlab = "Height", ylab = "Weight loss",
+     main = "Height vs weight loss (by gender)")
+legend("topright", legend = levels(data$gender),
+       col = 1:length(levels(data$gender)))
 ```
+
+![](template_assign_edda_files/figure-latex/unnamed-chunk-4-1.pdf)<!-- --> 
 
 An ANOVA test is performed on the linear model including diet, gender, height and age. The ANOVA table shows that diet has a significant effect on `weight_loss` (p < 0.05), but `gender`, `height` and `age` are not statistically significant (p > 0.05). This means that there is no evidence that these variables independently influence `weight_loss` in the linear model.
 
-```{r}
+
+``` r
 model1 <- lm(weight_loss ~ diet + gender + height + age, data = data)
 anova(model1)
 ```
+
+```
+## Analysis of Variance Table
+## 
+## Response: weight_loss
+##           Df Sum Sq Mean Sq F value Pr(>F)   
+## diet       2     61   30.26    5.18  0.008 **
+## gender     1      0    0.17    0.03  0.866   
+## height     1      1    0.78    0.13  0.715   
+## age        1      0    0.43    0.07  0.786   
+## Residuals 70    409    5.84                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
 We included the interaction between diet and gender as well to investigate whether the effect of diet differs between genders. The interaction term diet ~ gender is statistically significant (p = 0.048 < 0.05), which means that the interaction between gender and diet has effect on `weight_loss`. This means that the model fit is improved compared to the first model. The remaining variables (excluding diet), do not show a significant effect on the model fit.
-```{r}
+
+``` r
 model_int <- lm(weight_loss ~ diet * gender + height + age, data = data)
 anova(model_int)
 ```
+
+```
+## Analysis of Variance Table
+## 
+## Response: weight_loss
+##             Df Sum Sq Mean Sq F value Pr(>F)   
+## diet         2     61   30.26    5.50 0.0061 **
+## gender       1      0    0.17    0.03 0.8615   
+## height       1      1    0.78    0.14 0.7069   
+## age          1      0    0.43    0.08 0.7800   
+## diet:gender  2     35   17.48    3.18 0.0479 * 
+## Residuals   68    374    5.50                  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
 To investigate which model should be chosen, an additional ANOVA test is performed on the two models. Since p = 0.048 < 0.05, **H0** is rejected, so we can conclude that the interaction has effect on the model. This means that we should rather use `model_int` for, since including the interaction diet * gender improves the model according to the ANOVA test.
-```{r, model comparison}
+
+``` r
 anova(model1, model_int)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Model 1: weight_loss ~ diet + gender + height + age
+## Model 2: weight_loss ~ diet * gender + height + age
+##   Res.Df RSS Df Sum of Sq    F Pr(>F)  
+## 1     70 409                           
+## 2     68 374  2        35 3.18  0.048 *
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
 ## exercise 2E
@@ -468,7 +854,8 @@ For the selected model from Exercise 2D,
 \]
 predictions were computed for an average person (age and height set to their sample means). Here, gender = 0 denotes men and gender = 1 denotes women.
 
-```{r, exercise2e_predictions}
+
+``` r
 # Make sure variable types are correct (robust for knitting)
 data$diet   <- as.factor(data$diet)
 data$gender <- as.factor(data$gender)
@@ -498,5 +885,14 @@ results <- cbind(newdata, pred)
 results <- results[order(-results$fit), ]
 
 results
+```
 
-
+```
+##   diet gender  age height  fit  lwr  upr
+## 3    3      0 39.2    171 5.76 4.47 7.05
+## 5    2      1 39.2    171 4.30 2.70 5.90
+## 6    3      1 39.2    171 4.24 2.88 5.60
+## 4    1      1 39.2    171 3.63 2.14 5.12
+## 1    1      0 39.2    171 3.09 1.83 4.34
+## 2    2      0 39.2    171 2.56 1.29 3.82
+```
